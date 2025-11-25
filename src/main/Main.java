@@ -9,7 +9,7 @@ public class Main {
 		JFrame window = new JFrame();
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setResizable(false);
-		window.setTitle("Catventure Maze");
+		window.setTitle("CATcher");
 		
 		GamePanel gamePanel = new GamePanel();
 		

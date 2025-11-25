@@ -9,7 +9,7 @@ import javax.imageio.ImageIO;
 import main.GamePanel;
 import main.KeyHandler;
 
-public class Player extends Entity{
+public class Player extends Entity	{
 	
 	GamePanel gp;
 	KeyHandler keyH;
@@ -65,6 +65,7 @@ public class Player extends Entity{
 			right3 = ImageIO.read(getClass().getResourceAsStream("/player/Meow.left1.png"));
 			
 			light = ImageIO.read(getClass().getResourceAsStream("/tiles/lights.png"));
+	
 			backGround = ImageIO.read(getClass().getResourceAsStream("/maps/backGround2.png"));
 			
 		}catch(IOException e){
@@ -73,62 +74,68 @@ public class Player extends Entity{
 	}
 	
 	public void update() {
-		
-		//MOVING - allow multiple keys for diagonal movement
-		int velocityX = 0;
-		int velocityY = 0;
-		
-		if(keyH.leftPressed == true) {
-			velocityX -= speed;
-			direction = "left";
-		}
-		if(keyH.rightPressed == true) {
-			velocityX += speed;
-			direction = "right";
-		}
-		
-		// If any key was pressed, mark as moving
-		if(velocityX != 0 || velocityY != 0) {
-			moving = true;
-			
-			// Check collision separately for X and Y to allow sliding along walls
-			if(!gp.cChecker.checkTileCollisionX(this, velocityX)) {
-				worldX += velocityX;
-			}
-			if(!gp.cChecker.checkTileCollisionY(this, velocityY)) {
-				worldY += velocityY;
-			}
-		}
-		else {
-			moving = false;
-		}
-		
-		// Update sprite animation
-		spriteCounter++;
-		if(spriteCounter > 7) {
-			if(spriteNum == 1) {
-				spriteNum = 2;
-			}
-			else if(spriteNum == 2){
-				spriteNum = 1;
-			}
-			spriteCounter = 0;
-		}
-		
+	    
+	    // Normal walking speed
+	    int baseSpeed = 5;
+
+	    // Reset speed every frame
+	    speed = baseSpeed;
+
+	    // SHIFT sprinting: double speed
+	    if (keyH.shiftKeyPressed) {
+	        speed = baseSpeed * 2;
+	    }
+
+	    int velocityX = 0;
+	    int velocityY = 0;
+
+	    if (keyH.leftPressed) {
+	        velocityX -= speed;
+	        direction = "left";
+	    }
+	    if (keyH.rightPressed) {
+	        velocityX += speed;
+	        direction = "right";
+	    }
+
+	    // Check if player is moving
+	    if (velocityX != 0 || velocityY != 0) {
+	        moving = true;
+
+	        // Move with collision
+	        if (!gp.cChecker.checkTileCollisionX(this, velocityX)) {
+	            worldX += velocityX;
+	        }
+	        if (!gp.cChecker.checkTileCollisionY(this, velocityY)) {
+	            worldY += velocityY;
+	        }
+
+	    } else {
+	        moving = false;
+	    }
+
+	    // Sprite animation
+	    spriteCounter++;
+	    if (spriteCounter > 7) {
+	        spriteNum = (spriteNum == 1 ? 2 : 1);
+	        spriteCounter = 0;
+	    }
 	}
+
 	public void draw(Graphics2D g2) {
 		
 		BufferedImage image = null;
 		
 		
+		
 		//Draw animation if moving
 		if(moving == true) {
+			
+			
+			
+			
 			switch(direction) {
 			
-			
-				
-		
-				
 			case "left":
 				
 				if(spriteNum == 1) {
@@ -157,6 +164,9 @@ public class Player extends Entity{
 		
 		//draw idle image if not moving
 		if(moving == false) {
+			
+			
+			
 			switch(direction) {
 			case "up":
 				
@@ -206,9 +216,12 @@ public class Player extends Entity{
 			
 		}
 		
+		
+		
+		
 		int catSize = 55;
 		 
-		//	wddsg2.drawImage(light, 0, 0, gp.screenWidth, gp.screenHeight, null);
+		//wddsg2.drawImage(light, 0, 0, gp.screenWidth, gp.screenHeight, null);
 		g2.drawImage(backGround, 0, 0, gp.screenWidth, gp.screenHeight, null);
 		g2.drawImage(image, worldX, worldY, catSize* 2,  catSize * 2, null);
 		
