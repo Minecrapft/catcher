@@ -41,7 +41,7 @@ public class Player extends Entity {
 	public void setDefaultValues() {
 		worldX = 12 * 2;
 		worldY = 47 * 13;
-		speed = 7;
+		speed = 10;
 		direction = "right";
 		playerPosX = worldX / gp.tileSize;
 		playerPosY = worldY / gp.tileSize;
@@ -108,14 +108,14 @@ public class Player extends Entity {
 		// ================================
 		//   SHIFT SPRINT LOGIC
 		// ================================
-		int baseSpeed = 5;
+		int baseSpeed = 8;
 		speed = baseSpeed;
 		if (keyH.shiftKeyPressed) {
 			speed = baseSpeed * 2;
 		}
 
 		// ================================
-		//   MOVEMENT LOGIC
+		//   MOVEMENT LOGIC WITH SCREEN LIMITS
 		// ================================
 		int velocityX = 0;
 		int velocityY = 0;
@@ -129,19 +129,24 @@ public class Player extends Entity {
 			direction = "right";
 		}
 
-		if (velocityX != 0 || velocityY != 0) {
-			moving = true;
+		// Apply movement
+		worldX += velocityX;
+		worldY += velocityY;
 
-			if (!gp.cChecker.checkTileCollisionX(this, velocityX)) {
-				worldX += velocityX;
-			}
-			if (!gp.cChecker.checkTileCollisionY(this, velocityY)) {
-				worldY += velocityY;
-			}
+		// ================================
+		//   CLAMP TO SCREEN BOUNDS
+		// ================================
+		int playerWidth = 55 * 2;  // Same as in draw()
+		int playerHeight = 55 * 2;
 
-		} else {
-			moving = false;
-		}
+		if (worldX < 0) worldX = 0;
+		if (worldY < 0) worldY = 0;
+		if (worldX > gp.screenWidth - playerWidth) worldX = gp.screenWidth - playerWidth;
+		if (worldY > gp.screenHeight - playerHeight) worldY = gp.screenHeight - playerHeight;
+
+		// Update moving flag
+		moving = velocityX != 0 || velocityY != 0;
+
 
 		// ================================
 		//   ANIMATION UPDATE

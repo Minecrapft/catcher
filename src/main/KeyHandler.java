@@ -5,7 +5,7 @@ import java.awt.event.KeyListener;
 
 public class KeyHandler implements KeyListener {
 	
-	public boolean upPressed, downPressed, leftPressed, rightPressed, shiftKeyPressed, spacePressed, escPressed, wPressed, sPressed;
+	public boolean upPressed, downPressed, leftPressed, rightPressed, shiftKeyPressed, spacePressed, escPressed, wPressed, sPressed, lPressed;
 	public boolean upWasPressed = false, downWasPressed = false, spaceWasPressed = false, escWasPressed = false, wWasPressed = false, sWasPressed = false;
 
 	@Override
@@ -41,6 +41,9 @@ public class KeyHandler implements KeyListener {
 		}if(code == KeyEvent.VK_ESCAPE) {
 			escPressed = true;
 			
+		}if(code == KeyEvent.VK_L) {
+			lPressed = true;
+			
 		}
 		
 	}
@@ -73,6 +76,9 @@ public class KeyHandler implements KeyListener {
 			
 		}if(code == KeyEvent.VK_ESCAPE) {
 			escPressed = false;
+			
+		}if(code == KeyEvent.VK_L) {
+			lPressed = false;
 			
 		}
 		

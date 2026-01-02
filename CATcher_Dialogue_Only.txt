@@ -1,0 +1,383 @@
+CATcher Game - Developer Video Presentation Script
+Dialogue Version (No Code)
+
+Presented by: Cabahug, Diana, and Karen
+
+================================================================================
+PART 1: INTRODUCTION TO CATCHER
+================================================================================
+
+KAREN: "Hello everyone, and welcome to our CATcher Game Development Presentation. I'm Karen, one of the developers of this project. Today, my team and I - Diana and Cabahug - will walk you through every aspect of our game, from the architecture to the code to the mechanics."
+
+DIANA: "CATcher is a 2D top-down arcade-style game built entirely in Java. The concept is simple: you control a character at the bottom of the screen, and your goal is to catch falling food items while avoiding bombs. The longer you survive, the higher your score and the harder the game becomes."
+
+CABAHUG: "From a technical perspective, this game demonstrates fundamental game development concepts: the game loop, collision detection, state management, input handling, and audio integration. Everything you see is implemented in pure Java using Swing for graphics and javax.sound.sampled for audio."
+
+================================================================================
+PART 2: PROJECT STRUCTURE AND FILE BREAKDOWN
+================================================================================
+
+KAREN: "Let's start by understanding the file structure. Our project is organized into three main directories: src/ for source code, bin/ for compiled classes, and res/ for resources like images and sounds."
+
+DIANA: "In the source code, we have three main packages: main/, entity/, and tile/. The main/ package contains all the core game logic and managers. The entity/ package contains our game objects like Player, FallingEntity, and our sound system."
+
+CABAHUG: "Here are the critical files and what they do:
+
+Core Game Loop:
+- Main.java - Entry point, creates the game window
+- GamePanel.java - Main game container, houses the game loop and all components
+- GameStateManager.java - Tracks game states (MENU, GAME, PAUSE, GAMEOVER)
+
+Player and Entities:
+- Player.java - Player character with position, lives, and score
+- FallingEntity.java - Falling game objects (bombs and food)
+- GameplayManager.java - Handles spawning, collisions, and game logic
+
+Input and UI:
+- InputHandler.java - Processes keyboard and mouse input
+- KeyHandler.java - Tracks keyboard state
+- MouseHandler.java - Tracks mouse position and clicks
+- UIRenderer.java - Renders all menus, buttons, and HUD
+- ImageButton.java - Interactive button with hover effects and sounds
+
+Audio System:
+- SoundHandler.java - Low-level audio management
+- sounds.java - Game-specific sound organization"
+
+================================================================================
+PART 3: THE GAME LOOP - THE HEARTBEAT OF THE GAME
+================================================================================
+
+KAREN: "The game loop is the most critical component. It runs 60 times per second, and each iteration performs three main steps: input processing, game logic update, and rendering."
+
+DIANA: "Here's what happens during each frame:
+
+1. Input Processing: Listen for mouse movement and clicks, update player position
+2. Update Phase: Move all falling entities down, check for collisions, update score/lives
+3. Render Phase: Draw the background, player, falling entities, and HUD
+4. Sound: Play any audio that was triggered during update phase
+
+All of this happens 60 times per second, about every 16.67 milliseconds."
+
+CABAHUG: "The key is checking if enough time has passed since the last frame. This ensures the game runs at exactly 60 FPS regardless of the computer's speed."
+
+================================================================================
+PART 4: ENTITY SYSTEM - FOOD VS BOMBS
+================================================================================
+
+KAREN: "Entities are the core of our gameplay. Each entity is a falling object that starts at the top of the screen with a random X position and falls downward due to gravity. Every entity is classified as either food or a bomb."
+
+DIANA: "Let me explain the mechanics:
+
+FOOD ITEMS:
+- Give you points when caught (10-50 points depending on type)
+- Penalty of 20 points if they fall off the bottom without being caught
+- Cannot damage you - they're safe to approach but have a cost if missed
+
+BOMBS:
+- ALWAYS damages you
+- 100 points lost AND 1 life lost
+- The key mechanic: catching doesn't save you from bombs
+- Special explosion sound plays when hit"
+
+CABAHUG: "In FallingEntity.java, we track what type of entity it is. Each entity has an imageType value where 0 represents a bomb and 1-5 represent different food types. We have methods to check if an entity is a bomb and to get the point value for that specific entity type."
+
+================================================================================
+PART 5: COLLISION DETECTION - THE PHYSICS SYSTEM
+================================================================================
+
+KAREN: "Collision detection is how the game determines if things are touching. We need to check three types of collisions every frame:
+
+1. Did the player's catching net touch an entity?
+2. Did a bomb naturally fall down and hit the player?
+3. Did an entity fall off the bottom of the screen?"
+
+DIANA: "We use Java's Rectangle class for collision detection. Each game object has a collision rectangle, and we use the intersects() method to check if two rectangles overlap. If they do, we have a collision."
+
+CABAHUG: "Here's how collision detection works in GameplayManager.updateEntities(): We create an Iterator to safely loop through all falling entities. For each entity, we first update its position by moving it down the screen. Then we check for three types of collisions:
+
+First, we check if the player's catching net touched the entity. If the net is active and overlaps with the entity, we handle it differently based on whether it's a bomb or food.
+
+Second, we check if a bomb naturally collided with the player by just falling down and hitting them.
+
+Third, we check if the entity fell off the bottom of the screen without being caught.
+
+The important thing about using an Iterator instead of traditional ArrayList removal is that removing items during iteration can cause bugs. Iterator is also more efficient - it's O(1) per removal instead of O(n)."
+
+================================================================================
+PART 6: GAME STATE MANAGEMENT - MENU, PLAY, PAUSE, GAME OVER
+================================================================================
+
+KAREN: "The game has five distinct states, and players transition between them as they play. State management is crucial for controlling what happens at each moment."
+
+DIANA: "Let me walk through the states:
+
+MENU: Initial state when the game starts. Player sees title screen and Start button.
+- Transition: Click Start → GAME state
+
+GAME: Active gameplay. Player is catching and avoiding.
+- Transitions: Press ESC → PAUSE state | Lose all lives → GAMEOVER state
+
+PAUSE: Game is paused. Can resume or return to menu.
+- Transitions: Press ESC → GAME state | Click Menu → MENU state
+
+GAMEOVER: Player lost all lives. Can retry or return to menu.
+- Transitions: Click Retry → GAME state (new game) | Click Menu → MENU state
+
+HIGHSCORE: Optional state to show high scores (for future expansion)"
+
+CABAHUG: "In GameStateManager.java, we define the states as an enum with MENU, GAME, PAUSE, GAMEOVER, and HIGHSCORE. Every frame in GamePanel.render(), we check the current state and render accordingly. In the MENU state, we draw the main menu. In the GAME state, we draw the actual gameplay and HUD. In the PAUSE state, we draw a pause menu overlay. And in the GAMEOVER state, we draw the game over screen with buttons.
+
+In InputHandler.java, we handle state transitions. When ESC is pressed, we check what state we're in. If we're in GAME, we go to PAUSE. If we're in PAUSE, we go back to GAME. When pausing, we stop the background music, and when resuming, we restart it."
+
+================================================================================
+PART 7: INPUT SYSTEM - HOW PLAYERS CONTROL THE GAME
+================================================================================
+
+KAREN: "Input handling is how the game receives and responds to player actions. We have two types of input: keyboard and mouse."
+
+DIANA: "Here's what inputs do what:
+
+MOUSE INPUT:
+- Mouse Movement: Player character automatically follows the mouse cursor horizontally
+- Mouse Click: Activates the catching net (net swings upward)
+
+KEYBOARD INPUT:
+- ESC Key: Toggle pause (GAME ↔ PAUSE)
+- SPACE Key: Menu selection (activate buttons in MENU and GAMEOVER states)
+
+These inputs vary based on the current game state. Different states handle the same key differently."
+
+CABAHUG: "We have separate classes for tracking input. MouseHandler tracks mouse position and clicks. It extends MouseAdapter and listens for mouse movement events and mouse press events. When the mouse moves, we update the mouseX and mouseY coordinates. When the mouse is pressed, we tell the player to start catching.
+
+KeyHandler tracks keyboard state. It maintains a boolean array with 256 slots, one for each possible key code. When a key is pressed, we mark that key code as true in the array. When a key is released, we mark it as false. We have a method isPressedKey() that returns whether a specific key is currently pressed.
+
+InputHandler combines both and implements the actual game logic. When the game is running, we automatically move the player to follow the mouse cursor. We also check if ESC is pressed to toggle pause. When pausing, we stop the background music, and when resuming, we restart it."
+
+================================================================================
+PART 8: AUDIO SYSTEM - SOUND EFFECTS AND MUSIC
+================================================================================
+
+KAREN: "Audio is a crucial part of the gaming experience. We created a two-layer audio system: a low-level sound engine and a game-specific sound manager."
+
+DIANA: "Our game has audio for almost every event:
+
+BACKGROUND MUSIC:
+- Plays continuously during gameplay
+- Loops seamlessly
+
+SOUND EFFECTS:
+- Catching Food: Satisfying 'collect' sound
+- Bomb Hit: Explosion effect sound
+- Button Hover: Subtle UI feedback sound
+- Button Click: Click confirmation sound
+- Losing Life: Damage/hurt sound
+- Game Over: Game over music/sound
+
+All of these provide immediate audio feedback to the player, making the game feel more responsive and satisfying."
+
+CABAHUG: "The audio system is implemented in two classes. SoundHandler is the low-level engine that uses javax.sound.sampled. We store file paths instead of cached audio streams because AudioInputStream can't be reset. Every time we play a sound, we create a fresh stream from the file. This prevents errors and allows the same sound to play overlapping. We have a loadSound() method that registers a sound with a name and file path. We have a playSound() method that looks up the file path and plays it. And we have a loopSound() method for background music that loops continuously.
+
+sounds.java is the game-specific sound manager. It takes a SoundHandler instance and calls loadSound() for all our game sounds. It maps sound names like bomb_hit, food_collect, button_click, button_hover, and background_music to their file paths. Then it provides game methods like playBombHitSound() and playCoinCollectSound() that are called when game events happen. When a bomb is hit or caught, we call playBombHitSound(). When food is caught, we call playCoinCollectSound()."
+
+================================================================================
+PART 9: USER INTERFACE - MENUS, BUTTONS, AND HUD
+================================================================================
+
+KAREN: "The UI is responsible for displaying menus and the heads-up display (HUD) during gameplay. It's all managed by UIRenderer and ImageButton classes."
+
+DIANA: "The UI elements are:
+
+MAIN MENU:
+- Title text CATcher
+- Start Game button
+
+GAMEPLAY HUD:
+- Hearts display (shows remaining lives)
+- Score display (current points)
+- Difficulty level indicator
+
+PAUSE MENU:
+- Semi-transparent overlay
+- Resume button
+- Return to Menu button
+
+GAME OVER SCREEN:
+- Final score display
+- High score comparison
+- Retry button (start new game)
+- Menu button (return to main menu)"
+
+CABAHUG: "In UIRenderer.java, all buttons are ImageButton objects. We create startButton, pauseResumeButton, retryButton, and menuButton. Each button is created with a position, label, and reference to the sound handler. In drawMainMenu(), we update the button's hover state based on the current mouse position, draw the button, and check if it was clicked.
+
+ImageButton is enhanced with hover effects and sound. It tracks its X and Y position, stores the original position, tracks whether the mouse is over it, and has a hover offset of 5 pixels. Every frame, we call update() to check if the mouse is over the button. If it just entered the button area, we play a hover sound. In the draw() method, we move the button up 5 pixels if it's hovered, and we draw the button image and text. We have a playHoverSound() method that plays when the mouse first enters, and a playClickSound() method that plays when clicked.
+
+The buttons have visual feedback: they move up 5 pixels when you hover over them, and they play sound effects. This makes the UI feel responsive and engaging."
+
+================================================================================
+PART 10: GAME MECHANICS - LIVES, SCORING, AND DIFFICULTY
+================================================================================
+
+KAREN: "The core game mechanics drive the player's progression and challenge. Let me break down how scoring, lives, and difficulty work together."
+
+DIANA: "Here's the mechanics:
+
+LIVES SYSTEM:
+- Start with 3 lives (represented as hearts)
+- Each bomb hit: lose 1 life
+- When all 3 lives are gone: GAME OVER state
+
+SCORING SYSTEM:
+- Catch Food: +10 to +50 points (depending on type)
+- Miss Food (falls off): -20 points
+- Catch Bomb: -100 points (plus lose 1 life)
+- Hit Bomb: -100 points (plus lose 1 life)
+- Score never goes below 0
+
+DIFFICULTY SYSTEM:
+- Starts at level 1
+- Increases over time as you survive
+- Higher difficulty = faster falling entities
+- Difficulty multiplier: 1.0 + (gameTime / 10000)
+  - After 10 seconds: 1.1x speed
+  - After 30 seconds: 1.3x speed
+  - After 60 seconds: 1.6x speed"
+
+CABAHUG: "In Player.java, we track lives and score. We start with 3 lives and 0 score. The loseLife() method decreases lives by 1 and checks if the game should go to GAMEOVER state. The losePoints() method subtracts points from the score but prevents it from going below 0. The addPoints() method adds points to the score. We have getter methods to return the current score and lives.
+
+In GameplayManager.java, difficulty is calculated based on game time. The formula is 1.0 + (gameTime / 10000). This means after 10 seconds, the difficulty is 1.1x. After 30 seconds, it's 1.3x. After 60 seconds, it's 1.6x. We use this difficulty multiplier to increase the falling speed of entities.
+
+During collision detection, we apply the scoring. If an entity is a bomb, we lose 100 points and 1 life. If it's food, we add the entity's points to our score. If an entity falls off the bottom of the screen and it's food, we lose 20 points."
+
+================================================================================
+PART 11: PERFORMANCE AND OPTIMIZATION - MAKING IT SMOOTH
+================================================================================
+
+KAREN: "A game that runs smoothly is crucial for good gameplay. We had to optimize several aspects to maintain 60 FPS."
+
+DIANA: "Performance is about two things: efficiency and avoiding unnecessary work.
+
+KEY OPTIMIZATIONS:
+1. Iterator Pattern for Entity Removal - Don't use ArrayList.remove(i) in loops
+2. Difficulty Caching - Calculate difficulty once per frame, not for every entity
+3. Proper Threading - Game loop runs on separate thread from UI thread
+4. Collision Box Caching - Don't create new rectangles every frame
+
+WHY THIS MATTERS:
+- ArrayList.remove(i) in a loop with 100 entities = 10,000+ operations per frame
+- That's 600,000 operations per second just for removal!
+- Using Iterator: 100 operations per frame = 6,000 per second
+- That's a 100x performance improvement!"
+
+CABAHUG: "The critical optimization in GameplayManager.updateEntities() is using an Iterator instead of a traditional for loop with ArrayList.remove(). The wrong way would be to loop through the list with an index and call remove(i), which shifts all remaining elements down. With 100 entities and 100 removals per second, this becomes very slow.
+
+The right way is to use an Iterator. When we call iterator.remove(), it's O(1) because it doesn't need to shift any elements.
+
+Another optimization is difficulty caching. Instead of recalculating the difficulty formula for every entity spawn, we calculate it once per frame and store it in a variable called cachedDifficulty. Then we use that cached value for all spawning in that frame."
+
+================================================================================
+PART 12: COMPLETE GAME FLOW - ONE FULL FRAME EXPLAINED
+================================================================================
+
+KAREN: "Let me walk through exactly what happens during one single frame of the game at 60 FPS."
+
+DIANA: "Here's the sequence of events that happens every 16.67 milliseconds:
+
+STEP 1: INPUT PROCESSING (1-2ms)
+- MouseHandler detects mouse position
+- KeyHandler detects button presses
+- InputHandler updates player X position to match mouse
+- InputHandler checks for ESC key to toggle pause
+
+STEP 2: GAME LOGIC UPDATE (3-5ms)
+- Update all falling entity positions (move down by speed)
+- Increment game timer for difficulty calculation
+- Spawn new entities if it's time
+- Calculate current difficulty based on time
+
+STEP 3: COLLISION DETECTION (2-4ms)
+- Check if player catches any entity
+  - If food: add points, play collect sound
+  - If bomb: lose life, play explosion sound
+- Check if any bomb naturally collides with player
+  - Lose life and play sound
+- Check if any entity fell off bottom
+  - If food: lose points and play sound
+  - If bomb: nothing (escaped)
+- Remove dead entities using Iterator
+
+STEP 4: RENDERING (5-8ms)
+- Clear screen with background
+- Draw game objects (player, falling entities)
+- Draw HUD (hearts, score, difficulty level)
+- Or draw menus if in MENU/PAUSE/GAMEOVER state
+
+STEP 5: AUDIO PLAYBACK (instant)
+- Play any sound effects queued during collision checks
+- Continue looping background music
+
+Total: ~16.67ms - Ready for next frame!"
+
+CABAHUG: "In GamePanel.java, the updateGame() method handles steps 1 through 3. We call inputHandler.handleInput() for input processing. Then we call gameplayManager.updateEntities() to move entities and check collisions.
+
+The render() method handles step 4. We use a switch statement on the current game state. If we're in GAME state, we draw the gameplay background, all game objects, and the HUD. If we're in PAUSE state, we draw the pause menu overlay. If we're in GAMEOVER state, we draw the game over screen.
+
+The run() method contains the main frame loop. We get the current time, calculate how much time has passed since the last frame, and only update and render if enough time has passed. This ensures we maintain exactly 60 FPS."
+
+================================================================================
+PART 13: SUMMARY AND KEY TAKEAWAYS
+================================================================================
+
+KAREN: "Let's recap the key concepts we've covered today:
+
+GAME ARCHITECTURE:
+- Game loop at 60 FPS
+- State management system
+- Manager classes for organization
+- Input, Logic, Rendering separated
+
+GAMEPLAY MECHANICS:
+- Entity spawning with difficulty scaling
+- Collision detection with three types
+- Lives and scoring system
+- Progressive difficulty over time
+
+TECHNICAL IMPLEMENTATION:
+- Iterator pattern for safe removal
+- Enum-based state system
+- Event-driven audio system
+- Mouse and keyboard input handling
+
+PERFORMANCE:
+- 60 FPS smooth gameplay
+- Optimized entity removal
+- Proper threading
+- Resource management"
+
+DIANA: "From a player's perspective, CATcher delivers:
+- Engaging arcade gameplay
+- Immediate feedback (sounds and visuals)
+- Progressive challenge
+- Clear win/lose conditions
+- Smooth, responsive controls"
+
+KAREN: "From a developer's perspective, this project demonstrates:
+- Professional Java game development practices
+- Clean code architecture
+- Performance optimization techniques
+- Audio integration with javax.sound.sampled
+- Swing-based graphics rendering
+- Thread management and synchronization
+
+The code is well-organized, documented, and uses industry-standard patterns. This is a solid foundation for building more complex games."
+
+CABAHUG, DIANA, and KAREN: "Thank you for watching our CATcher Game Development Walkthrough! We've covered the complete architecture, all major components, game mechanics, code implementation, and optimization techniques. This project demonstrates real-world game development principles in Java. Feel free to extend this game with new features, and we hope this presentation helps you understand how games work under the hood!"
+
+================================================================================
+END OF PRESENTATION
+================================================================================
+
+Developed by: Karen (Architecture and System Design)
+              Diana (Game Mechanics and Gameplay Design)
+              Cabahug (Code Implementation and Optimization)
+

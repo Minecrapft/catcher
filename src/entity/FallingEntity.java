@@ -65,6 +65,8 @@ public class FallingEntity extends Entity{
             chicken = ImageIO.read(getClass().getResourceAsStream("/fallingObjects/Chicken.png"));
             heart = ImageIO.read(getClass().getResourceAsStream("/fallingObjects/Heart.png"));
             fish = ImageIO.read(getClass().getResourceAsStream("/fallingObjects/Fish.png"));
+            hotdog = ImageIO.read(getClass().getResourceAsStream("/fallingObjects/Hotdog.png"));
+            healingPotion = ImageIO.read(getClass().getResourceAsStream("/fallingObjects/HealingPotion.png")); 
         } catch (IOException e) {
             // If image fails to load, print error
             e.printStackTrace(); 
@@ -90,6 +92,13 @@ public class FallingEntity extends Entity{
                 currentImage = fish;
                 points = 100; 
                 break;
+            case 3:
+                currentImage = hotdog;
+                points = 25;
+                break;
+            case 4:
+                currentImage = healingPotion;
+                points = 0;
             default: // Default to chicken if unknown type
                 currentImage = chicken;
                 points = 50;
@@ -105,14 +114,9 @@ public class FallingEntity extends Entity{
         if (!isActive) return;
         
         // Calculate difficulty scaling: increase speed over time
-        // Every 300 frames (5 seconds at 60 FPS), increase speed by 0.5 pixels/frame
-        float difficultyMultiplier = 1.0f + (gameTime / 1000.0f) * 0.5f;
-        float currentFallSpeed = fallSpeed * difficultyMultiplier;
-        
-        // Cap the maximum speed to prevent it from being too fast
-        if (currentFallSpeed > 10) {
-            currentFallSpeed = 10; // Maximum 10 pixels per frame
-        }
+        // Avoid redundant floating-point math on every frame
+        float difficultyMultiplier = 1.0f + (gameTime * 0.0005f);
+        float currentFallSpeed = fallSpeed * (difficultyMultiplier > 10 ? 10 : difficultyMultiplier);
         
         // Move down by scaled fall speed pixels each frame
         worldY += (int) currentFallSpeed;
@@ -131,7 +135,7 @@ public class FallingEntity extends Entity{
         // If not active, don't draw anything
         if (!isActive) return;
         
-        int size = 55; // Size to draw the image
+        int size = 60; // Size to draw the image
         
         // Draw the image if it loaded successfully
         if (currentImage != null) {

@@ -12,7 +12,7 @@ public class Entity {
 	public BufferedImage bomb, chicken, fish, heart, hotdog, meat, poop, healingPotion;
 	public BufferedImage playButtonNormal, playButtonHighlighted, highscoreButtonNormal, highscoreButtonHighlighted, continueButtonNormal, continueButtonHighlighted;
 	public BufferedImage menuButtonNormal, menuButtonHighlighted, retryButtonNormal, retryButtonHighlighted;
-	public BufferedImage background, cat, catcher;
+	public BufferedImage background, cat, catcher, highScoreBufferedImage, gameOverBufferedImage, dead;
 	public String direction;
 	public int spriteCounter = 0;
 	public int spriteNum = 1;
